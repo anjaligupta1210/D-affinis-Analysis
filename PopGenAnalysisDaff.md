@@ -4,12 +4,12 @@ I am doing Population genomics analysis of D. affinis ST, SR1, SR2
 
 Here is my script to cat reads, fastp, and align them to the genome
 
-First, I indexed the fasta file of the genome on cluster
+First, I indexed the fasta file of the masked genome on cluster
 
 
 ```python
 module load bwa
-bwa index Daffinis_STfemale_v5.1.fasta
+bwa index Daffinis_STfemale_v5.1.masked.fasta
 ```
 
 Rob gave me the female ST Daff genome assembly
@@ -51,7 +51,7 @@ i=$1
     # Map to genome
     module load bwa
     module load samtools
-    bwa mem Daffinis_STfemale_v5.1.fasta "${File_dir}fil.pool${i}_1.fq.gz" "${File_dir}fil.pool${i}_2.fq.gz" | samtools view -hb -F 4 - | samtools sort - > "${File_dir}pool${i}.bam"
+    bwa mem Daffinis_STfemale_v5.1.masked.fasta "${File_dir}fil.pool${i}_1.fq.gz" "${File_dir}fil.pool${i}_2.fq.gz" | samtools view -hb -F 4 - | samtools sort - > "${File_dir}pool${i}.bam"
     samtools index "${File_dir}pool${i}.bam" 
 
     # Remove reads
@@ -69,7 +69,7 @@ To run this script using sbatch on cluster, the following sbatch script was used
 
 It is also in /work/unckless/a48g501/PopGen/
 
-It is called Script.sh
+It is called Script_DaffPopGenMappingPipeline.sh
 
 
 ```python
@@ -94,7 +94,7 @@ I used the following command to execute my script.
 ```python
 for i in $(seq 1 91)
 do
-sbatch Script.sh $i
+sbatch Script_DaffPopGenMappingPipeline.sh $i
 done
 ```
 
