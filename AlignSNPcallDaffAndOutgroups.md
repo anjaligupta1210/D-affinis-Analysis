@@ -49,14 +49,14 @@ chmod 777 *.gz
 
 #SR1 and SR2 reads have to be concatenated
 cat 54_GCCAAT_L001_R1_001.fastq.gz 54_GCCAAT_L001_R1_002.fastq.gz > Daff_SR1_1.fastq
-cat 54_GCCAAT_L001_R2_001.fastq.gz 54_GCCAAT_L001_R2_002.fastq.gz > Daff_SR2_2.fastq
+cat 54_GCCAAT_L001_R2_001.fastq.gz 54_GCCAAT_L001_R2_002.fastq.gz > Daff_SR1_2.fastq
 
 cat pool_57_USPD16092225-N708-AK394_HV3F7BBXX_L2_1.fq.gz pool_57_USPD16092225-N708-AK394_HTYWGBBXX_L6_1.fq.gz > Daff_SR2_1.fastq
 cat pool_57_USPD16092225-N708-AK394_HV3F7BBXX_L2_2.fq.gz pool_57_USPD16092225-N708-AK394_HTYWGBBXX_L6_2.fq.gz > Daff_SR2_2.fastq
 
 #Remove SR1 and SR2 rawreads
 rm 54_GCCAAT_L001_R*.fastq.gz
-rm pool_57_USPD16092225-N708-AK394_HV3F7BBXX_L*.fq.gz
+rm pool_57_*.fq.gz
 
 #I'll change ST reads name to have similar nomenclature
 gunzip -c affinisF_frag_R1.fq.gz > Daff_ST_1.fastq
