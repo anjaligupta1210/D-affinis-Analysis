@@ -45,6 +45,8 @@ File_dir="/work/unckless/a948g501/SlidingTrees/"
     #ST
     scp a948g501@dtn.ku.edu:/resfs/GROUPS/MB/NIH0072614/Daffinis/RawReads/Fragments/affinisF_frag_R*.fq.gz ${File_dir}
 
+chmod 777 *.gz
+
 #SR1 and SR2 reads have to be concatenated
 cat 54_GCCAAT_L001_R1_001.fastq.gz 54_GCCAAT_L001_R1_002.fastq.gz > Daff_SR1_1.fastq
 cat 54_GCCAAT_L001_R2_001.fastq.gz 54_GCCAAT_L001_R2_002.fastq.gz > Daff_SR2_2.fastq
@@ -140,9 +142,9 @@ Here is Script_GetOutgroupReads.sh
 ```python
 #!/bin/bash
 #SBATCH --nodes=1 --ntasks=1
-#SBATCH --time=6:00:00
+#SBATCH --time=100:00:00
 #SBATCH --mem=100GB
-#SBATCH --partition=sixhour
+#SBATCH --partition=unckless
 #SBATCH -o sh.%j.out
 #SBATCH -e sh.%j.err
 
