@@ -97,7 +97,8 @@ I'm calling this script - GetOutgroupReads.sh
 
 cd /work/unckless/a948g501/SlidingTrees/
 
-module load sratoolkit
+module load conda
+conda activate sra-tool_env
 
 #Copying D. algonquin Reads
 fasterq-dump SRR5768634
@@ -123,6 +124,7 @@ fasterq-dump SRR12849542
 mv SRR12849542_1.fastq Dazt_1.fastq
 mv SRR12849542_2.fastq Dazt_2.fastq
 
+conda deactivate
 ```
 
 I'll make this script executable and then run it using Script_GetOutgroupReads.sh
