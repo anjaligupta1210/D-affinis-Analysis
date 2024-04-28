@@ -4,13 +4,13 @@ Rob gave me *D. affinis* SR1, SR2 and ST reads, and a reference masked genome. I
 
 General steps in my pipeline after concatenating the reads - 
 
-    1. Run fastqc
-    2. Run fastp
-    3. Align using bwa
-    4. Index the bam file
-    5. Remove the reads, keep only aligned bam files and get stats on your aligned bam files
-    6. Call SNPs using bcftools-mpileup: separately for X(haploid) and autosomes(diploid)
-    7. Make trees across the X in sliding windows --> This is not a part of this pipeline - I'll do this in the next pipeline
+1. Run fastqc
+2. Run fastp
+3. Align using bwa
+4. Index the bam file
+5. Remove the reads, keep only aligned bam files and get stats on your aligned bam files
+6. Call SNPs using bcftools-mpileup: separately for X(haploid) and autosomes(diploid)
+7. Make trees across the X in sliding windows --> This is not a part of this pipeline - I'll do this in the next pipeline
 
 I'm doing all of this on the cluster in /work/unckless/a948g501/SlidingTrees/
 
