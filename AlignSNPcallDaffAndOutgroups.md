@@ -48,11 +48,17 @@ File_dir="/work/unckless/a948g501/SlidingTrees/"
 chmod 777 *.gz
 
 #SR1 and SR2 reads have to be concatenated
-cat 54_GCCAAT_L001_R1_001.fastq.gz 54_GCCAAT_L001_R1_002.fastq.gz > Daff_SR1_1.fastq
-cat 54_GCCAAT_L001_R2_001.fastq.gz 54_GCCAAT_L001_R2_002.fastq.gz > Daff_SR1_2.fastq
+cat 54_GCCAAT_L001_R1_001.fastq.gz 54_GCCAAT_L001_R1_002.fastq.gz > Daff_SR1_1.fastq.gz
+cat 54_GCCAAT_L001_R2_001.fastq.gz 54_GCCAAT_L001_R2_002.fastq.gz > Daff_SR1_2.fastq.gz
 
-cat pool_57_USPD16092225-N708-AK394_HV3F7BBXX_L2_1.fq.gz pool_57_USPD16092225-N708-AK394_HTYWGBBXX_L6_1.fq.gz > Daff_SR2_1.fastq
-cat pool_57_USPD16092225-N708-AK394_HV3F7BBXX_L2_2.fq.gz pool_57_USPD16092225-N708-AK394_HTYWGBBXX_L6_2.fq.gz > Daff_SR2_2.fastq
+gunzip -c Daff_SR1_1.fastq.gz > Daff_SR1_1.fastq
+gunzip -c Daff_SR1_2.fastq.gz > Daff_SR1_2.fastq
+
+cat pool_57_USPD16092225-N708-AK394_HV3F7BBXX_L2_1.fq.gz pool_57_USPD16092225-N708-AK394_HTYWGBBXX_L6_1.fq.gz > Daff_SR2_1.fastq.gz
+cat pool_57_USPD16092225-N708-AK394_HV3F7BBXX_L2_2.fq.gz pool_57_USPD16092225-N708-AK394_HTYWGBBXX_L6_2.fq.gz > Daff_SR2_2.fastq.gz
+
+gunzip -c Daff_SR2_1.fastq.gz > Daff_SR2_1.fastq
+gunzip -c Daff_SR2_2.fastq.gz > Daff_SR2_2.fastq
 
 #Remove SR1 and SR2 rawreads
 rm 54_GCCAAT_L001_R*.fastq.gz
@@ -62,6 +68,7 @@ rm pool_57_*.fq.gz
 gunzip -c affinisF_frag_R1.fq.gz > Daff_ST_1.fastq
 gunzip -c affinisF_frag_R2.fq.gz > Daff_ST_2.fastq
 
+rm Daff_SR*.fastq.gz
 rm affinisF_frag_R*.fq.gz
 
 ```
@@ -164,8 +171,9 @@ cd /work/unckless/a948g501/SlidingTrees/
 
 module load fastqc
 
-fastqc *.fastq
+file=$1
 
+fastqc ${file}
 ```
 
 I'll make this script executable and run it using Script_RunFastqc.sh
@@ -188,7 +196,17 @@ Here is Script_RunFastqc.sh
 #SBATCH -e sh.%j.err
 
 
-sh RunFastqc.sh
+sh RunFastqc.sh $1
+```
+
+To run this script, I used the following command to submit each fastqc job separately on cluster
+
+
+```python
+for file in *.fastq
+do
+sbatch Script_RunFastqc.sh $file
+done
 ```
 
 After looking at the results from fastqc, I'm running the other steps in an iterative loop.
@@ -201,8 +219,6 @@ I'm calling this script - RunFastpBwaAlignIndex.sh
 
 cd /work/unckless/a948g501/SlidingTrees/
 
-Filenames=("Daff_ST" "Daff_SR1" "Daff_SR2" "Dalg" "Datha_ea" "Datha_eb" "Dpse" "Dazt")
-
 i=$1
 
 module load conda
@@ -214,10 +230,10 @@ conda deactivate
 
 # Aligning to the masked genome
 module load bwa
+module load samtools
 bwa mem Daffinis_STfemale_v5.1.masked.fasta "${i}_1.fastq.gz" "${i}_2.fastq.gz" | samtools view -hb -F 4 - | samtools sort - > "${i}.bam"
 
 # Indexing the aligned file
-module load samtools
 samtools index "${i}.bam"
 
 # Stats on alignments
@@ -225,7 +241,10 @@ samtools flagstat "${i}.bam" > "${i}_bamStats.txt"
 zcat "${i}"_*.fastq.gz | wc -l > "${i}_TotalLinesinReadsR1R2combined.txt"
 
 # Remove all reads
-rm *.fastq*
+rm "${i}_1.fastq"
+rm "${i}_2.fastq"
+rm "${i}_1.fastq.gz"
+rm "${i}_2.fastq.gz"
 ```
 
 I'll make this file executable and run it using Script_RunFastpBwaAlignIndex.sh
@@ -278,6 +297,19 @@ Now, I want to call SNPs from my aligned bam files
 
 I'm using bcftools mpileup to call SNPs since these are divergent taxa!
 
+Here's my Autosomes.bed file - 
+
+
+```python
+Chr4_MullerB    1    49203969
+Chr2_MullerE    1    44456471
+Chr2.group4_MullerE    1    50000
+Chr3_MullerC    1    23927763
+Chr5_MullerF    1    1445284
+Unknown_69    1    654907
+mtDNA    1    15806
+```
+
 I'm calling this script - CallSNPs_bcftools_mpileup.sh
 
 
@@ -286,13 +318,16 @@ I'm calling this script - CallSNPs_bcftools_mpileup.sh
 
 cd /work/unckless/a948g501/SlidingTrees/
 
+# Specify the bed file containing regions to include
+bed_file="Autosomes.bed"
+
 module load bcftools
 
 # Haploid calling for ChrX_MullerAD
-bcftools mpileup -Ou -I -a FORMAT/AD --max-depth 5000 -f Daffinis_STfemale_v5.1.masked.fasta *.bam -r ChrX_MullerAD --ploidy 1 | bcftools call -vmO v -o SNPs_ChrX_haploid.vcf
+bcftools mpileup -Ou -I -a FORMAT/AD --max-depth 5000 -f Daffinis_STfemale_v5.1.masked.fasta *.bam -r ChrX_MullerAD | bcftools call -vmO v --ploidy 1 -o SNPs_ChrX_haploid.vcf
 
 # Diploid calling for autosomes
-bcftools mpileup -Ou -I -a FORMAT/AD --max-depth 5000 -f Daffinis_STfemale_v5.1.masked.fasta *.bam -R '^ChrX_MullerAD' | bcftools call -vmO v -o SNPs_Autosomes_diploid.vcf
+bcftools mpileup -Ou -I -a FORMAT/AD --max-depth 5000 -f Daffinis_STfemale_v5.1.masked.fasta *.bam -rf $bed_file | bcftools call -vmO v -o SNPs_Autosomes_diploid.vcf
 
 # SNP filtering and stats
 bcftools filter -i 'QUAL > 30 && TYPE="snp"' SNPs_ChrX_haploid.vcf -o filtered_SNPs_ChrX_haploid.vcf
