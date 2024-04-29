@@ -297,17 +297,17 @@ Now, I want to call SNPs from my aligned bam files
 
 I'm using bcftools mpileup to call SNPs since these are divergent taxa!
 
-Here's my Autosomes.bed file - 
+Here's my Autosomes.bed file -
 
 
 ```python
-Chr4_MullerB    1    49203969
-Chr2_MullerE    1    44456471
-Chr2.group4_MullerE    1    50000
-Chr3_MullerC    1    23927763
-Chr5_MullerF    1    1445284
-Unknown_69    1    654907
-mtDNA    1    15806
+Chr4_MullerB
+Chr2_MullerE
+Chr2.group4_MullerE
+Chr3_MullerC
+Chr5_MullerF
+Unknown_69
+mtDNA
 ```
 
 I'm calling this script - CallSNPs_bcftools_mpileup.sh
@@ -318,16 +318,13 @@ I'm calling this script - CallSNPs_bcftools_mpileup.sh
 
 cd /work/unckless/a948g501/SlidingTrees/
 
-# Specify the bed file containing regions to include
-bed_file="Autosomes.bed"
-
 module load bcftools
 
 # Haploid calling for ChrX_MullerAD
 bcftools mpileup -Ou -I -a FORMAT/AD --max-depth 5000 -f Daffinis_STfemale_v5.1.masked.fasta *.bam -r ChrX_MullerAD | bcftools call -vmO v --ploidy 1 -o SNPs_ChrX_haploid.vcf
 
 # Diploid calling for autosomes
-bcftools mpileup -Ou -I -a FORMAT/AD --max-depth 5000 -f Daffinis_STfemale_v5.1.masked.fasta *.bam -rf $bed_file | bcftools call -vmO v -o SNPs_Autosomes_diploid.vcf
+bcftools mpileup -Ou -I -a FORMAT/AD --max-depth 5000 -f Daffinis_STfemale_v5.1.masked.fasta *.bam -R Autosomes.bed | bcftools call -vmO v -o SNPs_Autosomes_diploid.vcf
 
 # SNP filtering and stats
 bcftools filter -i 'QUAL > 30 && TYPE="snp"' SNPs_ChrX_haploid.vcf -o filtered_SNPs_ChrX_haploid.vcf
