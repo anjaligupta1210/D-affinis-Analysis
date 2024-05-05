@@ -192,3 +192,5 @@ cat partitioned_Autosome.phylips/DNA_p*.phylip.treefile > OutputTrees_Autosome.t
 ```
 
 Now we can calculate the proportion of trees supporting various topologies and visualize them using R 
+
+The R script used for visualization can be found here - https://github.com/anjaligupta1210/D-affinis-Analysis/blob/main/SlidingTrees.R
